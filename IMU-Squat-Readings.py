@@ -153,8 +153,21 @@ segmented_resampled_squats = np.array([np.pad(segment, ((0, longest_squat_measur
 segmented_resampled_squats = np.swapaxes(segmented_resampled_squats, 1, 2)
 # print(segmented_resampled_squats.shape)#(10, 10, 41)
 
+#Iespejamās klases, atspogulotas ar cipariem, modelim vajadzigi cipari, kas atspogulo klases
+label_to_number = {
+    "bad-squat": 0,
+    "good-squat": 1,
+}
+
+#Veikto pietupienu markejums, vajag but vienadam ar segmentu daudzumu
+squat_labels = ["bad-squat", "bad-squat", "bad-squat", "bad-squat", "good-squat", "good-squat", "good-squat", "bad-squat", "good-squat", "good-squat"]
+
+# Markejam datus ar klasem
+segment_labels = np.array([label_to_number[label] for label in squat_labels])
+print(segment_labels)
 
 # ---- 4. Attēlot datus ar atpazītajiem segmentiem ----
+'''
 plt.figure(figsize=(12, 6))  # Izveidojam grafiku ar izmēru 12x6 collas
 
 # Uzzīmējam sākotnējos sensora mērījumus, alpha ir krasas caurspidigums
@@ -177,4 +190,5 @@ plt.ylabel("Sensora vērtības mērījumi")  # Y ass nosaukums
 plt.title("Garenslīpuma mērījumi")  # Grafika galvenes nosaukums
 plt.legend()  # Pievienojam leģendu
 plt.grid()  # Pievienojam režģi
-plt.show()  # Parādam grafiku
+plt.show()  # Parādam grafiku'
+'''
