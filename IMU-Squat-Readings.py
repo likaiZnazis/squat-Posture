@@ -7,11 +7,14 @@ import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
 from scipy.fft import fft, ifft
 
+#importējam klasifikācijas modeli
+from aeon.classification.convolution_based import MultiRocketHydraClassifier
+
 # from scipy import stats
 # Prieks modas, medianas un citam statiem
 
 # Ieliekam datus, iznemam galveni
-path = "C:/Users/User/Desktop/IMUData22.csv"
+path = "C:/Users/maris/Downloads/IMUData22.csv"
 data = np.loadtxt(path, skiprows=1, delimiter=",", dtype=float)
 
 # Panemam laika kolonu
@@ -141,9 +144,9 @@ longest_squat_measured = max(len(segment) for segment in segmented_squats)
 # # Atkārtoti paraugojam pietupiena segmentus. np.pad(array, {sequence, array_like, int}, mode dazadi). Iespējams otru argumentu var pamainīt
 segmented_resampled_squats = np.array([np.pad(segment, ((0, longest_squat_measured - len(segment)), (0, 0)), mode='constant') for segment in segmented_squats])# 'constant' - atkāti paraugo ar konstantu vērtību
 
-# # for squat in segmented_resampled_squats:
+# for squat in segmented_resampled_squats:
 #     # Izprintejam pietupienu mērījumu punktu skaitu
-#     # print(len(squat))
+#     print(len(squat))
 
 # print(segmented_resampled_squats.shape)#(10, 41, 10)
 # #3D datu rinda: 10 segmenti, 41 iezimes, 10 merijumu paraugi
@@ -164,7 +167,17 @@ squat_labels = ["bad-squat", "bad-squat", "bad-squat", "bad-squat", "good-squat"
 
 # Markejam datus ar klasem
 segment_labels = np.array([label_to_number[label] for label in squat_labels])
-print(segment_labels)
+# print(segment_labels)
+
+# ---- Modeļa treniņs
+# Izveidojam modeļa instanci
+clf = MultiRocketHydraClassifier(random_state=0)
+
+# Liekam segmentetos pietupienus ar markejumiem, katrs segments atbilst 1D rindas, kur ieksa ir markejumi
+clf.fit(segmented_resampled_squats, segment_labels)
+
+# Parbaudam ka modelis klasifice pietupienus
+print(clf.predict(segmented_resampled_squats))
 
 # ---- 4. Attēlot datus ar atpazītajiem segmentiem ----
 '''
