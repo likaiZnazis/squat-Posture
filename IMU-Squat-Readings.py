@@ -109,6 +109,49 @@ threshold = np.mean(fourier_filtered_data) + np.std(fourier_filtered_data)
 
 segments = get_segments(fourier_filtered_data, threshold)
 # Segmentus vajadzētu likt citā rindā
+#https://www.aeon-toolkit.org/en/stable/api_reference/auto_generated/aeon.classification.convolution_based.MultiRocketHydraClassifier.html#aeon.classification.convolution_based.MultiRocketHydraClassifier.fit
+# Si ir datu rinda kadu MultiRocketHydraClassifier pienem
+# make_example_3d_numpy(n_cases=10, n_channels=1, n_timepoints=12) - (segmenti, iezimes, merijumu paraugi)
+
+segmented_squats = []
+
+for start, end in segments:
+    # Izgriezam rindas. Tas ir rindas, garumi sakrīt
+    # print(len(data[start:end+1]))
+    # Iznemam visas vajadzīgās vērtības
+    segment_data = data[start:end + 1, [sensor_measurments[sensor_signal] for sensor_signal in sensor_measurments]]  
+    segmented_squats.append(segment_data)
+
+
+# Izgriezam pirmo un pedejo pietupienu, jo tie nav pietupieni
+segmented_squats = segmented_squats[1:11]
+
+# for squat in segmented_squats:
+#     # Izprintejam pietupienu mērījumu punktu skaitu
+#     print(len(squat))
+
+# # Izmeram cik katra pietupiena segmenta ir paraugu merijumi
+# # squat_segment_samples = [len(segment) for segment in segmented_squats]#izmantojam list comprehension
+# # print(squat_segment_samples)
+
+# # Iegūstam garāko pietupiena izpildījumu
+longest_squat_measured = max(len(segment) for segment in segmented_squats)
+# # print(longest_squat_measured)
+
+# # Atkārtoti paraugojam pietupiena segmentus. np.pad(array, {sequence, array_like, int}, mode dazadi). Iespējams otru argumentu var pamainīt
+segmented_resampled_squats = np.array([np.pad(segment, ((0, longest_squat_measured - len(segment)), (0, 0)), mode='constant') for segment in segmented_squats])# 'constant' - atkāti paraugo ar konstantu vērtību
+
+# # for squat in segmented_resampled_squats:
+#     # Izprintejam pietupienu mērījumu punktu skaitu
+#     # print(len(squat))
+
+# print(segmented_resampled_squats.shape)#(10, 41, 10)
+# #3D datu rinda: 10 segmenti, 41 iezimes, 10 merijumu paraugi
+# #Sis nav korekti, jo mums ir 10 segmenti, 10 iezimes, 41 merijumu paraugi
+
+# #Apmainam iezimes ar merijumu paraugiem
+segmented_resampled_squats = np.swapaxes(segmented_resampled_squats, 1, 2)
+# print(segmented_resampled_squats.shape)#(10, 10, 41)
 
 
 # ---- 4. Attēlot datus ar atpazītajiem segmentiem ----
