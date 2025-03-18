@@ -1,10 +1,14 @@
 import numpy as np
 #https://numpy.org/doc/2.1/reference/routines.array-creation.html
 import matplotlib.pyplot as plt
+#https://matplotlib.org/stable/plot_types/index.html
+
+#Signala apstradasana, pievienoja filtru shoutouts AI
 from scipy.signal import butter, filtfilt
 from scipy.fft import fft, ifft
-from scipy import stats
 
+# from scipy import stats
+# Prieks modas, medianas un citam statiem
 
 # Ieliekam datus, iznemam galveni
 path = "C:/Users/User/Desktop/IMUData22.csv"
@@ -15,15 +19,119 @@ timestamps = data[:, 0]
 
 # Panemam kopejo rindu skaitu
 timestamps1 = data.shape[0]
-print(timestamps1)
+# print(timestamps1)
 
 # Īstās laika vienības
-new_timestamps = np.arange(0, timestamps1 * 20, 20).reshape(-1, 1)
-print(new_timestamps)
+
+# print(new_timestamps)
 
 
 # 50Hz paraugu ņemšanas ātrus priekš sensoriem. Vajadzētu būt 20ms
-timestamp_differences = np.diff(timestamps)
-print(timestamp_differences)
+# timestamp_differences = np.diff(timestamps)
+# print(timestamp_differences)
 
-print(stats.mode(timestamp_differences)) # moda ir 0.019999980926513672, ne gluži 20ms, bet ir tuvu
+# print(stats.mode(timestamp_differences)) # moda ir 0.019999980926513672, ne gluži 20ms, bet ir tuvu
+
+fs = 50  # Iestatītā paraugu ņemšanas frekvence
+new_timestamps = np.arange(0, timestamps1 * 20, 20)
+
+# Sensora CSV mainīgo nosaukumi un attiecīgā kollona
+sensor_measurments = {
+    "time": 0,
+    "accX": 1,
+    "accY": 2,
+    "accZ": 3,
+    "gyroX": 4,
+    "gyroY": 5,
+    "gyroZ": 6,
+    "pitch": 7,
+    "roll": 8,
+    "yaw": 9,
+    # Altitude bija izmeginājums, domāju iespējams būs labs mērījums priekš segmentācijas
+    # Ļoti jocīgi mēra, krīt palēnām uz leju, diezgan bezjēdzīgs
+}
+
+# Sensora kolona, kas tiks atspoguļota grafikā atkarībā no laika
+sensor_values = data[:, sensor_measurments["pitch"]]  
+# print(sensor_values)
+
+#AI palidzēja ar filtru, lidz galam nesaprotu kas notiek
+# ---- 1. Apply Butterworth Low-Pass Filter (fc = 20 Hz, order = 8) ----
+def butter_lowpass(cutoff, fs, order=8):
+    nyquist = 0.5 * fs  # Nyquist frequency
+    normal_cutoff = cutoff / nyquist  # Normalize cutoff frequency
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
+# Apply the filter
+cutoff_freq = 20  # Hz
+b, a = butter_lowpass(cutoff_freq, fs)
+butter_filtered_data = filtfilt(b, a, sensor_values)
+
+# ---- 2. Apply Fourier Transform Filtering ----
+signal_fft = fft(butter_filtered_data)  # Compute FFT after Butterworth filtering
+n = len(butter_filtered_data)
+frequencies = np.fft.fftfreq(n, d=(1/fs))
+
+# Remove frequencies above cutoff
+fourier_cutoff = 20  # Hz
+cutoff_index = np.where(frequencies > fourier_cutoff)[0][0]
+signal_fft[cutoff_index:] = 0  # Zero out high frequencies
+
+# Convert back to time domain
+fourier_filtered_data = np.real(ifft(signal_fft))
+
+#Segmenta metodi panemu no cita pētījuma
+#https://github.com/mlgig/Video_vs_Shimmer_ECML_2023/blob/master/utils/math_funtions.py
+# ---- 3. Segment Detection ----
+def get_segments(weights, threshold):
+    """
+    Identify continuous segments where values exceed the threshold.
+    """
+    marker_list = [i >= threshold for i in weights]
+    i = 0
+    final_pairs = []
+    
+    while i < len(weights):
+        if marker_list[i]:  # Start of a segment
+            start = i
+            while i < len(weights) and marker_list[i]:
+                i += 1
+            end = i - 1  # End of the segment
+            if end - start > 1:  # Ensure segment is significant
+                final_pairs.append((start, end))
+        i += 1
+    return np.array(final_pairs)
+
+# Set threshold dynamically based on Fourier filtered data
+threshold = np.mean(fourier_filtered_data) + np.std(fourier_filtered_data)
+
+
+segments = get_segments(fourier_filtered_data, threshold)
+# Segmentus vajadzētu likt citā rindā
+
+
+# ---- 4. Attēlot datus ar atpazītajiem segmentiem ----
+plt.figure(figsize=(12, 6))  # Izveidojam grafiku ar izmēru 12x6 collas
+
+# Uzzīmējam sākotnējos sensora mērījumus, alpha ir krasas caurspidigums
+plt.plot(new_timestamps, sensor_values, label='Orģinālie mērījumi', color='red', alpha=0.3)
+
+# Uzzīmējam Butterworth zemo frekvenču filtru datus (var atkomentēt, ja nepieciešams)
+# plt.plot(new_timestamps, butter_filtered_data, label='Butterworth Filtered Data (20 Hz, Order 8)', color='green', alpha=0.6)
+
+# Marķējam atpazītos segmentus grafikā
+for (start, end) in segments:
+    plt.axvspan(new_timestamps[start], new_timestamps[end], color='yellow', alpha=0.3, 
+                label='Pietupiena segments' if start == segments[0][0] else "")  #Leģendu pievienojam tikai vienu reizi, caur for loop ta ir attiecigas reizes vairak
+
+# Uzzīmējam Fourier transformācijas filtrētos datus
+plt.plot(new_timestamps, fourier_filtered_data, label='Fourier Transform filtrēti mērījumi', color='blue', linewidth=2)
+
+# Noformējam grafika aprakstus
+plt.xlabel("Laiks (ms)")  # X ass nosaukums
+plt.ylabel("Sensora vērtības mērījumi")  # Y ass nosaukums
+plt.title("Garenslīpuma mērījumi")  # Grafika galvenes nosaukums
+plt.legend()  # Pievienojam leģendu
+plt.grid()  # Pievienojam režģi
+plt.show()  # Parādam grafiku
