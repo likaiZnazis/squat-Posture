@@ -9,6 +9,7 @@ import os
 import numpy as np
 import csv
 import math
+import traceback
 #Steps
 '''
 FIRST: need to understand where to place the file. I don't want to change the path each time.
@@ -32,60 +33,85 @@ Log information about the segments and append them to the main csv file.
 activeDirectoryName = "dataset"
 currentDirectory = os.getcwd()
 path = os.path.join(currentDirectory, activeDirectoryName)
-fileName = ''.join(os.listdir(path))
+fileName = "IMUData22.csv"
 pathToCSVFie = os.path.join(path, fileName)
-# print(pathToCSVFie)
 
+def creating_file(pathFile):
+    open(pathFile, "w", newline="")
 
-# indexi = 1
-# filecsvName = str(indexi) + "IMU.csv"
-# currentCSVfile = os.path.join(path, filecsvName)
-# with open(path, newline="") as newcsv:
-#     lineWriter = csv.writer(path)
-# def creating_file(pathFile):
-#     with open(pathFile, "w", newline=""):
-#         pass
-# def writing_file(pathFile):
-#     return open(pathFile, "w", newline="")
+def appending_file(pathFile):
+    return open(pathFile, "a", newline="")
 
-# def closing_file(file):
-#     file.close()
+def closing_file(file):
+    file.close()
 
-# file = writing_file(currentCSVfile)
+def file_exists(filecsvName):
+    for file in os.listdir(path):
+        if(file == filecsvName):
+            print("File " + filecsvName + " exists")
+            return True
+        else:
+            print("File " + filecsvName + " does not exist")
+            return False
 
+global currentFile
+global fileWriter
 
 def divide_set():
     try:
         mainSet = np.loadtxt(pathToCSVFie, dtype=float, skiprows=1, delimiter=",")
-        #placeing it into 3 separate files
+        #placing it into 3 separate files
         setRows = mainSet.shape[0] - (mainSet.shape[0] % 3) #Need to make 3 files out of that single file
         indexes = [math.ceil(setRows / 3) * line for line in range(4)] #Break row points
-        indexes = indexes[:-1] #Dont need the last one
+        indexes = indexes[1:-1] #669, 1388
+        print(indexes)
         indexi = 1
-        # filecsvName = str(indexi) + "IMU.csv"
-        currentCSVfile = os.path.join(path, filecsvName)
-        
-        #Look if a file exists if it does not exist we create a new file
-        print(os.listdir(path))
-        # creating_file(currentCSVfile)
 
         #with ensures that the file is automatically closed when no longer needed
         with open(pathToCSVFie, newline='') as csvfile:
             lineReader = csv.reader(csvfile)
             
             for index, row in enumerate(lineReader):
+                #filename and its location, this is for checking if the file exists and creating a path for the file
                 filecsvName = str(indexi) + "IMU.csv"
-                if(index<1):
+                pathToCurrentFile = os.path.join(path, filecsvName)
+                if(index==1):
                     #skip the header
+                    #Look if a file exists if it does not exist we create a new file
+                    #If it does exist we write to it
+                    if(not file_exists(filecsvName)):
+                       #create file
+                       creating_file(pathToCurrentFile)
+                       currentFile = appending_file(pathToCurrentFile)
+                       fileWriter = csv.writer(currentFile)
+                       fileWriter.writerow(row)
+                       indexi += 1
+                    else:
+                        #write the current row to the file
+                        currentFile = appending_file(pathToCurrentFile)
+                        fileWriter = csv.writer(currentFile)
+                        fileWriter.writerow(row)
+                        indexi += 1
                     continue
                 for breakIndex in indexes:
+                    #for each break number we create a new file
                     if(breakIndex == index):
-                        #for each break number we create a new file
-                        indexi += 1
-                        # print(indexi)
-                        # fileName = str(indexi) + "IMU.csv"
-                        print(filecsvName)
                         #close the current file
+                        closing_file(currentFile)
+                        indexi += 1
+                        print(filecsvName)
+                        #Look if a file exists if it does not exist we create a new file
+                        if(not file_exists(filecsvName)):
+                            #create file
+                            creating_file(pathToCurrentFile)
+                            currentFile = appending_file(pathToCurrentFile)
+                            fileWriter = csv.writer(currentFile)
+                            fileWriter.writerow(row)
+                            # print("second hello")
+                            pass
+                        else:
+                            pass
+                        
                         #create a new file
                         #add the current row
                         
@@ -93,22 +119,13 @@ def divide_set():
                 else:
                     # print("Ņo")
                     pass
-                # else:
-                #     print(lineReader.line_num)
-                #     print(index)
-                #     print(", ".join(row))
-                    
-                    # Returns a array - print(row)
-
-        # for line in csvFile - setRows:
-        #     print()
-        #Loop over the whole set c
-        # for 
         
     except OSError as err:
         print("OS error occured " + "probably the path is not correct" + " " + str(err))
+        print(traceback.format_exc())
     except Exception as err:
         print("Dont know how to handle this error " + str(err))
+        print(traceback.format_exc())
         # raise - reraising the error is only useful if there are higher-up try,except
     except ValueError:
         print("")
@@ -122,8 +139,6 @@ def creat_single_dataset():
     #Divide the file into 3 parts
         #
     pass
-
-
 
 def creating_folder(path):
     try:
