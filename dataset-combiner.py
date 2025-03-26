@@ -48,11 +48,18 @@ def closing_file(file):
 def file_exists(filecsvName):
     for file in os.listdir(path):
         if(file == filecsvName):
-            print("File " + filecsvName + " exists")
+            # print("File " + filecsvName + " exists")
             return True
         else:
-            print("File " + filecsvName + " does not exist")
+            # print("File " + filecsvName + " does not exist")
             return False
+
+#Need to refactor code that if the file exists we return the file 
+def file_needs(pathToCurrentFile, header):
+    currFile = appending_file(pathToCurrentFile)
+    fileWrite = csv.writer(currFile)
+    fileWrite.writerow(header)
+    return currFile, fileWrite
 
 global currentFile
 global fileWriter
@@ -64,32 +71,32 @@ def divide_set():
         setRows = mainSet.shape[0] - (mainSet.shape[0] % 3) #Need to make 3 files out of that single file
         indexes = [math.ceil(setRows / 3) * line for line in range(4)] #Break row points
         indexes = indexes[1:-1] #669, 1388
-        print(indexes)
         indexi = 1
 
         #with ensures that the file is automatically closed when no longer needed
         with open(pathToCSVFie, newline='') as csvfile:
             lineReader = csv.reader(csvfile)
-            
-            for index, row in enumerate(lineReader):
+            header = next(lineReader)
+            for index, row in enumerate(lineReader, start=1):
                 #filename and its location, this is for checking if the file exists and creating a path for the file
                 filecsvName = str(indexi) + "IMU.csv"
                 pathToCurrentFile = os.path.join(path, filecsvName)
-                if(index==1):
-                    #skip the header
+                if(index == setRows):
+                    #Close the file for the last row, maybe can do it else where
+                    closing_file(currentFile)
+                    break
+                elif(index==1):
                     #Look if a file exists if it does not exist we create a new file
                     #If it does exist we write to it
                     if(not file_exists(filecsvName)):
                        #create file
                        creating_file(pathToCurrentFile)
-                       currentFile = appending_file(pathToCurrentFile)
-                       fileWriter = csv.writer(currentFile)
+                       currentFile, fileWriter = file_needs(pathToCurrentFile, header)
                        fileWriter.writerow(row)
                        indexi += 1
                     else:
                         #write the current row to the file
-                        currentFile = appending_file(pathToCurrentFile)
-                        fileWriter = csv.writer(currentFile)
+                        currentFile, fileWriter = file_needs(pathToCurrentFile, header)
                         fileWriter.writerow(row)
                         indexi += 1
                     continue
@@ -99,26 +106,21 @@ def divide_set():
                         #close the current file
                         closing_file(currentFile)
                         indexi += 1
-                        print(filecsvName)
                         #Look if a file exists if it does not exist we create a new file
                         if(not file_exists(filecsvName)):
                             #create file
                             creating_file(pathToCurrentFile)
-                            currentFile = appending_file(pathToCurrentFile)
-                            fileWriter = csv.writer(currentFile)
+                            currentFile, fileWriter = file_needs(pathToCurrentFile, header)
                             fileWriter.writerow(row)
-                            # print("second hello")
-                            pass
                         else:
-                            pass
-                        
-                        #create a new file
-                        #add the current row
-                        
-                # Keep adding rows
+                            #write to the current file
+                            currentFile, fileWriter = file_needs(pathToCurrentFile, header)
+                            fileWriter.writerow(row)
+
+                # If the its not the last or first index we add rows to the current file
                 else:
-                    # print("Ņo")
-                    pass
+                    print(index)
+                    fileWriter.writerow(row)
         
     except OSError as err:
         print("OS error occured " + "probably the path is not correct" + " " + str(err))
@@ -131,7 +133,7 @@ def divide_set():
         print("")
     pass
 
-divide_set()
+# divide_set()
 
 def creat_single_dataset():
     #SECOND step
@@ -139,6 +141,15 @@ def creat_single_dataset():
     #Divide the file into 3 parts
         #
     pass
+
+def delete_files():
+    for file in os.listdir(path):
+        if(file != fileName):
+            os.remove(os.path.join(path, file))
+        else:
+            continue
+
+delete_files()
 
 def creating_folder(path):
     try:
