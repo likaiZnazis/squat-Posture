@@ -36,30 +36,59 @@ fileName = ''.join(os.listdir(path))
 pathToCSVFie = os.path.join(path, fileName)
 # print(pathToCSVFie)
 
+
+# indexi = 1
+# filecsvName = str(indexi) + "IMU.csv"
+# currentCSVfile = os.path.join(path, filecsvName)
+# with open(path, newline="") as newcsv:
+#     lineWriter = csv.writer(path)
+# def creating_file(pathFile):
+#     with open(pathFile, "w", newline=""):
+#         pass
+# def writing_file(pathFile):
+#     return open(pathFile, "w", newline="")
+
+# def closing_file(file):
+#     file.close()
+
+# file = writing_file(currentCSVfile)
+
+
 def divide_set():
     try:
         mainSet = np.loadtxt(pathToCSVFie, dtype=float, skiprows=1, delimiter=",")
         #placeing it into 3 separate files
         setRows = mainSet.shape[0] - (mainSet.shape[0] % 3) #Need to make 3 files out of that single file
         indexes = [math.ceil(setRows / 3) * line for line in range(4)] #Break row points
-        indexes = indexes[1:-1] #Dont need the first one and last one
+        indexes = indexes[:-1] #Dont need the last one
+        indexi = 1
+        # filecsvName = str(indexi) + "IMU.csv"
+        currentCSVfile = os.path.join(path, filecsvName)
+        
+        #Look if a file exists if it does not exist we create a new file
+        print(os.listdir(path))
+        # creating_file(currentCSVfile)
 
         #with ensures that the file is automatically closed when no longer needed
         with open(pathToCSVFie, newline='') as csvfile:
-            #Reads a single line, default line separator is ","
             lineReader = csv.reader(csvfile)
-            #For each character in the line that is separated with "," print
+            
             for index, row in enumerate(lineReader):
+                filecsvName = str(indexi) + "IMU.csv"
                 if(index<1):
                     #skip the header
                     continue
-                #for each break number we create a new file
                 for breakIndex in indexes:
                     if(breakIndex == index):
+                        #for each break number we create a new file
+                        indexi += 1
+                        # print(indexi)
+                        # fileName = str(indexi) + "IMU.csv"
+                        print(filecsvName)
                         #close the current file
                         #create a new file
-                        print(index)
                         #add the current row
+                        
                 # Keep adding rows
                 else:
                     # print("Ņo")
@@ -76,16 +105,16 @@ def divide_set():
         #Loop over the whole set c
         # for 
         
-    except OSError:
-        print("OS error occured " + "probably the path is not correct")
+    except OSError as err:
+        print("OS error occured " + "probably the path is not correct" + " " + str(err))
     except Exception as err:
-        print("Dont know how to handle this error " + err)
+        print("Dont know how to handle this error " + str(err))
         # raise - reraising the error is only useful if there are higher-up try,except
     except ValueError:
         print("")
     pass
 
-# divide_set()
+divide_set()
 
 def creat_single_dataset():
     #SECOND step
@@ -93,6 +122,8 @@ def creat_single_dataset():
     #Divide the file into 3 parts
         #
     pass
+
+
 
 def creating_folder(path):
     try:
