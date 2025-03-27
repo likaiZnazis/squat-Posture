@@ -36,14 +36,18 @@ path = os.path.join(currentDirectory, activeDirectoryName)
 fileName = "IMUData22.csv"
 pathToCSVFie = os.path.join(path, fileName)
 
+def closing_file(file):
+    file.close()
+
 def creating_file(pathFile):
-    open(pathFile, "w", newline="")
+    file = open(pathFile, "w", newline="")
+    #close the file besauce we are just creating it
+    closing_file(file)
 
 def appending_file(pathFile):
     return open(pathFile, "a", newline="")
 
-def closing_file(file):
-    file.close()
+
 
 def file_exists(filecsvName):
     for file in os.listdir(path):
@@ -130,17 +134,45 @@ def divide_set():
         print(traceback.format_exc())
         # raise - reraising the error is only useful if there are higher-up try,except
     except ValueError:
-        print("")
-    pass
+        print("There was a value error " + str(err))
+        print(traceback.format_exc())
 
 # divide_set()
 
-def creat_single_dataset():
-    #SECOND step
-    #First need to get the file into the dataset folder
-    #Divide the file into 3 parts
-        #
-    pass
+def combine_sets():
+    try:
+        # Get path to the set files. They will start with a number
+        pathToSetFiles = [ os.path.join(path, file) for file in os.listdir(path) if (file[0].isdigit())]
+        #path to the combined set file
+        combinedFilePath = os.path.join(path, "combinedIMU.csv")
+        #if combined file does not exist create it
+        if(not file_exists("combinedIMU.csv")):
+            creating_file(combinedFilePath)
+        
+        #open the created file
+        with open(combinedFilePath, 'a', newline='') as csvFile:
+            lineWriter = csv.writer(csvFile)
+            #for each of the set files
+            for pathFile in pathToSetFiles:
+                #open up those files to read them
+                print("Reading from path: " + pathFile)
+                with open(pathFile, newline="") as setFile:
+                    lineReader = csv.reader(setFile)
+                    next(lineReader)
+                    for index, row in enumerate(lineReader, start=1):
+                        lineWriter.writerow(row)
+    except OSError as err:
+        print("OS error occured " + "probably the path is not correct" + " " + str(err))
+        print(traceback.format_exc())
+    except Exception as err:
+        print("Dont know how to handle this error " + str(err))
+        print(traceback.format_exc())
+        # raise - reraising the error is only useful if there are higher-up try,except
+    except ValueError:
+        print("There was a value error " + str(err))
+        print(traceback.format_exc())
+
+# combine_sets()
 
 def delete_files():
     for file in os.listdir(path):
