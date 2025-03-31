@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 # Prieks modas, medianas un citam statiem
 
 # Ieliekam datus, iznemam galveni
-path = "C:/Users/User/Desktop/Bakalaurs/Mans BD/Programmesana/Dataset/dataset/IMUData22.csv"
-data = np.loadtxt(path, skiprows=1, delimiter=",", dtype=float)
+# path = "C:/Users/User/Desktop/Bakalaurs/Mans BD/Programmesana/Dataset/dataset/IMUData22.csv"
+# data = np.loadtxt(path, skiprows=1, delimiter=",", dtype=float)
 
 # 50Hz paraugu ņemšanas ātrus priekš sensoriem. Vajadzētu būt 20ms
 # timestamp_differences = np.diff(timestamps)
@@ -52,7 +52,7 @@ sensor_measurments = {
 def get_segment_indexes(file):
     #Creates a array with starting and ending indexes for each segment
     segment_signal = file[:, sensor_measurments["pitch"]]
-    threshold = np.mean(segment_signal) + np.std(segment_signal)
+    threshold = (np.mean(segment_signal) + np.std(segment_signal)) - 55
     marker_list = [i >= threshold for i in segment_signal]
     i = 0
     final_pairs = []
@@ -66,7 +66,7 @@ def get_segment_indexes(file):
             if end - start > 1:  # Ensure segment is significant
                 final_pairs.append((start, end))
         i += 1
-    return np.array(final_pairs)
+    return final_pairs
 
 
 # ---- 3. Iegūstam segmentus ----
@@ -77,21 +77,25 @@ def get_segment_indexes(file):
 # make_example_3d_numpy(n_cases=10, n_channels=1, n_timepoints=12) - (segmenti, iezimes, merijumu paraugi)
 
 #Test for right amount of segments = 10 test for returned segments
-def extract_each_signal(segment_index_array):
+"""
+Problem with this function is that each segment will be different type of shape.
+Meaning that if I do a long squat there will be more measurments than in a short one.
+np.array() does not allow that. Setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions.
+Can do it only in standart array.
+"""
+def extract_each_signal(segment_index_array, data):
     #Using starting and edning indexes extracts each sensor signal from the original dataset. Resulting in individual segments
     segmented_squats = []
-    for start, end in segment_index_array:
-        # Izgriezam rindas. Tas ir rindas, garumi sakrīt
-        # print(len(data[start:end+1]))
+    for start,end in segment_index_array:
         # Iznemam visas vajadzīgās vērtības
-        segment_data = data[start:end + 1, [sensor_measurments[sensor_signal] for sensor_signal in sensor_measurments]]  
+        segment_data = data[start:end + 1, [sensor_measurments[sensor_signal] for sensor_signal in sensor_measurments]]
         segmented_squats.append(segment_data)
-    return np.array(segmented_squats)
+    return segmented_squats[1:11]#2D array
 
 def resample_segments(segmented_squats):
     longest_squat_measured = max(len(segment) for segment in segmented_squats)
     segmented_resampled_squats = np.array([np.pad(segment, ((0, longest_squat_measured - len(segment)), (0, 0)), mode='constant') for segment in segmented_squats])
-    print(segmented_resampled_squats.shape)
+    segmented_resampled_squats = np.swapaxes(segmented_resampled_squats, 1, 2)
     return segmented_resampled_squats
 """
 # for squat in segmented_squats:
@@ -147,8 +151,8 @@ def resample_segments(segmented_squats):
 
 # ---- 4. Attēlot datus ar atpazītajiem segmentiem ----
 def show_graph(file):
-    data = np.loadtxt(file, delimiter=",", skiprows=1, dtype="float")
-    sensor_values = file[:,sensor_measurments["pitch"]]
+    data = np.loadtxt(file, delimiter=",",dtype="float",skiprows=1)
+    sensor_values = data[:,sensor_measurments["pitch"]]
     new_timestamps = np.arange(0, data.shape[0] * 20, 20)
     segments = get_segment_indexes(data)
     plt.figure(figsize=(12, 6))  # Izveidojam grafiku ar izmēru 12x6 collas

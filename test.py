@@ -9,15 +9,23 @@ class TestPreprocessig(unittest.TestCase):
 
     #Testing each file shape
     def test_shapeSET(self):
-        for setFile in self._pathToDict:
+        pathToSetFiles = [ os.path.join(self._pathToDict, file) for file in os.listdir(self._pathToDict) if (file[0].isdigit())]
+        for setFile in pathToSetFiles:
             currentFile = np.loadtxt(setFile,dtype="float", skiprows=1, delimiter=",")
-            file_dimenstions = (preprocessing.extract_each_signal(preprocessing.get_segment_indexes(currentFile))).shape
+            segment_indexes = preprocessing.get_segment_indexes(currentFile)
+            sensor_signals = preprocessing.extract_each_signal(segment_indexes, currentFile)
+            segmented_resampled_set =  preprocessing.resample_segments(sensor_signals)
+            file_dimenstions = segmented_resampled_set.shape
             with self.subTest(line = file_dimenstions):
-                self.assertEqual(file_dimenstions, (10, 13, file_dimenstions.shape[2]))
+                self.assertEqual(file_dimenstions, (10, 13, file_dimenstions[2]))
 
     #Testing the final numpy shape
     def test_shapeFINAL(self):
-        dataset_combiner.combine_sets_numpy()
-        final_dataset = np.loadtxt(os.path.join(self._pathToDict, "final_dataset"), dtype="float", delimiter=",")
+        if(not dataset_combiner.file_exists("final_dataset")):
+            dataset_combiner.main()
+        final_dataset = np.load(os.path.join(self._pathToDict, "final_dataset.npy"))
         dataset_dimensions = final_dataset.shape
-        self.assertEqual(dataset_dimensions, (120, 13, dataset_dimensions.shape[2]))
+        self.assertEqual(dataset_dimensions, (20, 13, dataset_dimensions[2]))
+
+if(__name__ == "__main__"):
+    unittest.main()

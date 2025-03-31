@@ -7,30 +7,28 @@ import preprocessing
 activeDirectoryName = "dataset"
 currentDirectory = os.getcwd()
 path = os.path.join(currentDirectory, activeDirectoryName)
-fileName = "IMUData22.csv"
-pathToCSVFie = os.path.join(path, fileName)
+# fileName = "IMUData22.csv"
+# pathToCSVFie = os.path.join(path, fileName)
 
-def combine_sets_numpy():
+def combine_sets():
     try:
         # Get path to the set files. They will start with a number
         pathToSetFiles = [ os.path.join(path, file) for file in os.listdir(path) if (file[0].isdigit())]
         # Get segments from each file
-        all_signals = np.array()
+        all_signals = []
         for pathSetFile in pathToSetFiles:
             #load the file
             currentFile = np.loadtxt(pathSetFile,dtype="float", skiprows=1, delimiter=",")
             #Get segment indexes
             segment_indexes = preprocessing.get_segment_indexes(currentFile)
             #Extract each sensor signal from the segment indexes
-            sensor_signals = preprocessing.extract_each_signal(segment_indexes)
-            #Append to a single numpy array
-            all_signals.append(sensor_signals)
-        
-        #Resample to the longest squat
-        segmented_resampled_squats = preprocessing.resample_segments(all_signals)
-        #Save the final dataset
-        np.save(os.path.join(path, "final_dataset"), segmented_resampled_squats)
-        return segmented_resampled_squats
+            sensor_signals = preprocessing.extract_each_signal(segment_indexes, currentFile) 
+            print("Segmented squats " + str(len(sensor_signals)))
+            #sensor_signals is a 2D array
+            for row in sensor_signals:
+                all_signals.append(row)
+        print(len(all_signals))
+        return all_signals
 
     except OSError as err:
         print("OS error occured " + "probably the path is not correct" + " " + str(err))
@@ -43,14 +41,41 @@ def combine_sets_numpy():
         print("There was a value error " + str(err))
         print(traceback.format_exc())
 
-def delete_files():
+def delete_files(fileName):
     for file in os.listdir(path):
         if(file != fileName):
             os.remove(os.path.join(path, file))
         else:
             continue
 
+def file_exists(fileName):
+    for file in os.listdir(path):
+        if(file == fileName):
+            return True
+        else:
+            return False
+
+# preprocessing.show_graph(os.path.join(path, "1-Set.csv"))
+def main():
+    extracted_segments = combine_sets()
+    dataset = preprocessing.resample_segments(extracted_segments)
+    print(dataset.shape[2])
+    # np.save(os.path.join(path, "final_dataset"), dataset)
+#working with csv files
 """
+import csv
+import math
+def closing_file(file):
+    file.close()
+
+def creating_file(pathFile):
+    file = open(pathFile, "w", newline="")
+    #close the file besauce we are just creating it
+    closing_file(file)
+
+def appending_file(pathFile):
+    return open(pathFile, "a", newline="")
+
 def combine_sets_file():
     try:
         # Get path to the set files. They will start with a number
@@ -89,32 +114,6 @@ def creating_folder(path):
         os.mkdir(path)
     except OSError as error:
         print(error)
-"""
-"""
-import csv
-import math
-def closing_file(file):
-    file.close()
-
-def creating_file(pathFile):
-    file = open(pathFile, "w", newline="")
-    #close the file besauce we are just creating it
-    closing_file(file)
-
-def appending_file(pathFile):
-    return open(pathFile, "a", newline="")
-
-
-
-def file_exists(filecsvName):
-    for file in os.listdir(path):
-        if(file == filecsvName):
-            # print("File " + filecsvName + " exists")
-            return True
-        else:
-            # print("File " + filecsvName + " does not exist")
-            return False
-
 #Need to refactor code that if the file exists we return the file 
 def file_needs(pathToCurrentFile, header):
     currFile = appending_file(pathToCurrentFile)
