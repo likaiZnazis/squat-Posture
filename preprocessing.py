@@ -17,18 +17,6 @@ import matplotlib.pyplot as plt
 path = "C:/Users/User/Desktop/Bakalaurs/Mans BD/Programmesana/Dataset/dataset/IMUData22.csv"
 data = np.loadtxt(path, skiprows=1, delimiter=",", dtype=float)
 
-# Panemam laika kolonu
-# timestamps = data[:, 0]
-
-# Panemam kopejo rindu skaitu
-# timestamps1 = data.shape[0]
-# print(timestamps1)
-
-# Īstās laika vienības
-
-# print(new_timestamps)
-
-
 # 50Hz paraugu ņemšanas ātrus priekš sensoriem. Vajadzētu būt 20ms
 # timestamp_differences = np.diff(timestamps)
 # print(timestamp_differences)
@@ -57,37 +45,6 @@ sensor_measurments = {
     # Ļoti jocīgi mēra, krīt palēnām uz leju, diezgan bezjēdzīgs
 }
 
-# Sensora kolona, kas tiks atspoguļota grafikā atkarībā no laika
-
-# print(sensor_values)
-
-#AI palidzēja ar filtru, lidz galam nesaprotu kas notiek
-# ---- 1. Apply Butterworth Low-Pass Filter (fc = 20 Hz, order = 8) ----
-"""
-def butter_lowpass(cutoff, fs, order=8):
-    nyquist = 0.5 * fs  # Nyquist frequency
-    normal_cutoff = cutoff / nyquist  # Normalize cutoff frequency
-    b, a = butter(order, normal_cutoff, btype='low', analog=False)
-    return b, a
-
-# Apply the filter
-cutoff_freq = 20  # Hz
-b, a = butter_lowpass(cutoff_freq, fs)
-butter_filtered_data = filtfilt(b, a, sensor_values)
-
-# ---- 2. Apply Fourier Transform Filtering ----
-signal_fft = fft(butter_filtered_data)  # Compute FFT after Butterworth filtering
-n = len(butter_filtered_data)
-frequencies = np.fft.fftfreq(n, d=(1/fs))
-
-# Remove frequencies above cutoff
-fourier_cutoff = 20  # Hz
-cutoff_index = np.where(frequencies > fourier_cutoff)[0][0]
-signal_fft[cutoff_index:] = 0  # Zero out high frequencies
-
-# Convert back to time domain
-fourier_filtered_data = np.real(ifft(signal_fft))
-"""
 #Segmenta metodi panemu no cita pētījuma
 #https://github.com/mlgig/Video_vs_Shimmer_ECML_2023/blob/master/utils/math_funtions.py
 
@@ -136,10 +93,7 @@ def resample_segments(segmented_squats):
     segmented_resampled_squats = np.array([np.pad(segment, ((0, longest_squat_measured - len(segment)), (0, 0)), mode='constant') for segment in segmented_squats])
     print(segmented_resampled_squats.shape)
     return segmented_resampled_squats
-
-# Izgriezam pirmo un pedejo pietupienu, jo tie nav pietupieni
-
-
+"""
 # for squat in segmented_squats:
 #     # Izprintejam pietupienu mērījumu punktu skaitu
 #     print(len(squat))
@@ -189,30 +143,28 @@ def resample_segments(segmented_squats):
 
 # Parbaudam ka modelis klasifice pietupienus
 # print(clf.predict(segmented_resampled_squats))
+"""
 
 # ---- 4. Attēlot datus ar atpazītajiem segmentiem ----
-"""
-plt.figure(figsize=(12, 6))  # Izveidojam grafiku ar izmēru 12x6 collas
+def show_graph(file):
+    data = np.loadtxt(file, delimiter=",", skiprows=1, dtype="float")
+    sensor_values = file[:,sensor_measurments["pitch"]]
+    new_timestamps = np.arange(0, data.shape[0] * 20, 20)
+    segments = get_segment_indexes(data)
+    plt.figure(figsize=(12, 6))  # Izveidojam grafiku ar izmēru 12x6 collas
 
-# Uzzīmējam sākotnējos sensora mērījumus, alpha ir krasas caurspidigums
-plt.plot(new_timestamps, sensor_values, label='Orģinālie mērījumi', color='red', alpha=0.3)
+    # Uzzīmējam sākotnējos sensora mērījumus, alpha ir krasas caurspidigums
+    plt.plot(new_timestamps, sensor_values, label='Orģinālie mērījumi', color='red', alpha=0.3)
 
-# Uzzīmējam Butterworth zemo frekvenču filtru datus (var atkomentēt, ja nepieciešams)
-# plt.plot(new_timestamps, butter_filtered_data, label='Butterworth Filtered Data (20 Hz, Order 8)', color='green', alpha=0.6)
+    # Marķējam atpazītos segmentus grafikā
+    for (start, end) in segments:
+        plt.axvspan(new_timestamps[start], new_timestamps[end], color='yellow', alpha=0.3, 
+                    label='Pietupiena segments' if start == segments[0][0] else "")  #Leģendu pievienojam tikai vienu reizi, caur for loop ta ir attiecigas reizes vairak
 
-# Marķējam atpazītos segmentus grafikā
-for (start, end) in segments:
-    plt.axvspan(new_timestamps[start], new_timestamps[end], color='yellow', alpha=0.3, 
-                label='Pietupiena segments' if start == segments[0][0] else "")  #Leģendu pievienojam tikai vienu reizi, caur for loop ta ir attiecigas reizes vairak
-
-# Uzzīmējam Fourier transformācijas filtrētos datus
-# plt.plot(new_timestamps, fourier_filtered_data, label='Fourier Transform filtrēti mērījumi', color='blue', linewidth=2)
-
-# Noformējam grafika aprakstus
-plt.xlabel("Laiks (ms)")  # X ass nosaukums
-plt.ylabel("Sensora vērtības mērījumi")  # Y ass nosaukums
-plt.title("Garenslīpuma mērījumi")  # Grafika galvenes nosaukums
-plt.legend()  # Pievienojam leģendu
-plt.grid()  # Pievienojam režģi
-plt.show()  # Parādam grafiku'
-"""
+    # Noformējam grafika aprakstus
+    plt.xlabel("Laiks (ms)")  # X ass nosaukums
+    plt.ylabel("Sensora vērtības mērījumi")  # Y ass nosaukums
+    plt.title("Garenslīpuma mērījumi")  # Grafika galvenes nosaukums
+    plt.legend()  # Pievienojam leģendu
+    plt.grid()  # Pievienojam režģi
+    plt.show()  # Parādam grafiku'
