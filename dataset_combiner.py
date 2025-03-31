@@ -1,34 +1,8 @@
-#What I need
-"""""
-Let's assume that we have a folder where are 12 csv files.
-We need to rename each of the files to 1-Set.csv, 2-Set.csv etc
-Need to log each of the files preprocessing where are segments made.
-These segments are placed insdie a single file.
-"""""
+
 import os
 import numpy as np
-import csv
-import math
 import traceback
-#Steps
-'''
-FIRST: need to understand where to place the file. I don't want to change the path each time.
-For example if I pull this git to a different PC then it would create a folder and place these csv files.
--Place it inside the project direcotry. This happens on github ;/
-
-SECOND: need to go over each of the files and get segments of those files.
-Log information about the segments and append them to the main csv file.
-'''
-
-#Command shortcut
-'''
-#getcwd() - gets current working directory
-#mkdir(path) - creates a directory
-# os.mkdir(currentDirectory + "\dataset")
-#path.join() - join a bunch of string together to form a path
-#rmdir - removes a directory
-# os.rmdir(path)
-'''
+import preprocessing
 
 activeDirectoryName = "dataset"
 currentDirectory = os.getcwd()
@@ -36,6 +10,89 @@ path = os.path.join(currentDirectory, activeDirectoryName)
 fileName = "IMUData22.csv"
 pathToCSVFie = os.path.join(path, fileName)
 
+def combine_sets_numpy():
+    try:
+        # Get path to the set files. They will start with a number
+        pathToSetFiles = [ os.path.join(path, file) for file in os.listdir(path) if (file[0].isdigit())]
+        # Get segments from each file
+        all_signals = np.array()
+        for pathSetFile in pathToSetFiles:
+            #load the file
+            currentFile = np.loadtxt(pathSetFile,dtype="float", skiprows=1, delimiter=",")
+            #Get segment indexes
+            segment_indexes = preprocessing.get_segment_indexes(currentFile)
+            #Extract each sensor signal from the segment indexes
+            sensor_signals = preprocessing.extract_each_signal(segment_indexes)
+            #Append to a single numpy array
+            all_signals.append(sensor_signals)
+        
+        #Resample to the longest squat
+        segmented_resampled_squats = preprocessing.resample_segments(all_signals)
+        #Save the final dataset
+        np.save(os.path.join(path, "final_dataset"), segmented_resampled_squats)
+        return segmented_resampled_squats
+
+    except OSError as err:
+        print("OS error occured " + "probably the path is not correct" + " " + str(err))
+        print(traceback.format_exc())
+    except Exception as err:
+        print("Dont know how to handle this error " + str(err))
+        print(traceback.format_exc())
+        # raise - reraising the error is only useful if there are higher-up try,except
+    except ValueError:
+        print("There was a value error " + str(err))
+        print(traceback.format_exc())
+
+def delete_files():
+    for file in os.listdir(path):
+        if(file != fileName):
+            os.remove(os.path.join(path, file))
+        else:
+            continue
+
+"""
+def combine_sets_file():
+    try:
+        # Get path to the set files. They will start with a number
+        pathToSetFiles = [ os.path.join(path, file) for file in os.listdir(path) if (file[0].isdigit())]
+        #path to the combined set file
+        combinedFilePath = os.path.join(path, "combinedIMU.csv")
+        #if combined file does not exist create it
+        if(not file_exists("combinedIMU.csv")):
+            creating_file(combinedFilePath)
+        
+        #open the created file
+        with open(combinedFilePath, 'a', newline='') as csvFile:
+            lineWriter = csv.writer(csvFile)
+            #for each of the set files
+            for pathFile in pathToSetFiles:
+                #open up those files to read them
+                print("Reading from path: " + pathFile)
+                with open(pathFile, newline="") as setFile:
+                    lineReader = csv.reader(setFile)
+                    next(lineReader)
+                    for index, row in enumerate(lineReader, start=1):
+                        lineWriter.writerow(row)
+    except OSError as err:
+        print("OS error occured " + "probably the path is not correct" + " " + str(err))
+        print(traceback.format_exc())
+    except Exception as err:
+        print("Dont know how to handle this error " + str(err))
+        print(traceback.format_exc())
+        # raise - reraising the error is only useful if there are higher-up try,except
+    except ValueError:
+        print("There was a value error " + str(err))
+        print(traceback.format_exc())
+
+def creating_folder(path):
+    try:
+        os.mkdir(path)
+    except OSError as error:
+        print(error)
+"""
+"""
+import csv
+import math
 def closing_file(file):
     file.close()
 
@@ -67,7 +124,6 @@ def file_needs(pathToCurrentFile, header):
 
 global currentFile
 global fileWriter
-
 def divide_set():
     try:
         mainSet = np.loadtxt(pathToCSVFie, dtype=float, skiprows=1, delimiter=",")
@@ -136,55 +192,4 @@ def divide_set():
     except ValueError:
         print("There was a value error " + str(err))
         print(traceback.format_exc())
-
-# divide_set()
-
-def combine_sets():
-    try:
-        # Get path to the set files. They will start with a number
-        pathToSetFiles = [ os.path.join(path, file) for file in os.listdir(path) if (file[0].isdigit())]
-        #path to the combined set file
-        combinedFilePath = os.path.join(path, "combinedIMU.csv")
-        #if combined file does not exist create it
-        if(not file_exists("combinedIMU.csv")):
-            creating_file(combinedFilePath)
-        
-        #open the created file
-        with open(combinedFilePath, 'a', newline='') as csvFile:
-            lineWriter = csv.writer(csvFile)
-            #for each of the set files
-            for pathFile in pathToSetFiles:
-                #open up those files to read them
-                print("Reading from path: " + pathFile)
-                with open(pathFile, newline="") as setFile:
-                    lineReader = csv.reader(setFile)
-                    next(lineReader)
-                    for index, row in enumerate(lineReader, start=1):
-                        lineWriter.writerow(row)
-    except OSError as err:
-        print("OS error occured " + "probably the path is not correct" + " " + str(err))
-        print(traceback.format_exc())
-    except Exception as err:
-        print("Dont know how to handle this error " + str(err))
-        print(traceback.format_exc())
-        # raise - reraising the error is only useful if there are higher-up try,except
-    except ValueError:
-        print("There was a value error " + str(err))
-        print(traceback.format_exc())
-
-# combine_sets()
-
-def delete_files():
-    for file in os.listdir(path):
-        if(file != fileName):
-            os.remove(os.path.join(path, file))
-        else:
-            continue
-
-delete_files()
-
-def creating_folder(path):
-    try:
-        os.mkdir(path)
-    except OSError as error:
-        print(error)
+"""
