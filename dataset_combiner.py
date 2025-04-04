@@ -23,11 +23,9 @@ def combine_sets():
             segment_indexes = preprocessing.get_segment_indexes(currentFile)
             #Extract each sensor signal from the segment indexes
             sensor_signals = preprocessing.extract_each_signal(segment_indexes, currentFile) 
-            print("Segmented squats " + str(len(sensor_signals)))
             #sensor_signals is a 2D array
             for row in sensor_signals:
                 all_signals.append(row)
-        print(len(all_signals))
         return all_signals
 
     except OSError as err:
@@ -56,11 +54,11 @@ def file_exists(fileName):
             return False
 
 # preprocessing.show_graph(os.path.join(path, "1-Set.csv"))
-# def main():
-#     extracted_segments = combine_sets()
-#     dataset = preprocessing.resample_segments(extracted_segments)
-#     print(dataset.shape[2])
-    # np.save(os.path.join(path, "final_dataset"), dataset)
+def main():
+    extracted_segments = combine_sets()
+    dataset = preprocessing.resample_segments(extracted_segments)
+    print("There are {} segments total".format(dataset.shape[0]))
+    np.save(os.path.join(path, "final_dataset"), dataset)
 #working with csv files
 """
 import csv
