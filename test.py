@@ -5,8 +5,11 @@ import dataset_combiner
 import preprocessing
 
 class TestPreprocessig(unittest.TestCase):
-    _pathToDict = os.path.join(os.getcwd(),"dataset")
-
+    
+    @classmethod
+    def setUpClass(cls):
+        cls._pathToDict = os.path.join(os.getcwd(),"dataset")
+    
     #Testing each file shape
     def test_shapeSET(self):
         pathToSetFiles = [ os.path.join(self._pathToDict, file) for file in os.listdir(self._pathToDict) if (file[0].isdigit())]
@@ -17,6 +20,7 @@ class TestPreprocessig(unittest.TestCase):
             segmented_resampled_set =  preprocessing.resample_segments(sensor_signals)
             file_dimenstions = segmented_resampled_set.shape
             with self.subTest(line = file_dimenstions):
+                print("{} file contains {} segments".format(setFile.split("\\",-1)[-1], file_dimenstions[0]))
                 self.assertEqual(file_dimenstions, (10, 13, file_dimenstions[2]))
 
     #Testing the final numpy shape
@@ -27,5 +31,5 @@ class TestPreprocessig(unittest.TestCase):
         dataset_dimensions = final_dataset.shape
         self.assertEqual(dataset_dimensions, (20, 13, dataset_dimensions[2]))
 
-if(__name__ == "__main__"):
-    unittest.main()
+# if(__name__ == "__main__"):
+#     unittest.main()

@@ -1,28 +1,29 @@
-import os
-"""
-Saprast pa daļām kā strādās sistēma.
-Izveidojam mapi, kur tiks ielikti mērijumu un markejumu faili. Merijumi notiks ik pa 10 izpildijumiem
-    ~/Documents/Squat-classifcation/Measurments config.txt/1/IMUData.csv
-    ~/Documents/Squat-classifcation/Measurments config.txt/2/IMUData.csv 
-                                                           12
-    
-    Faili ir izveidoti, lai veiktu apstradi
-    *notiek apstrade*
+import cmd
+# import os
+from test import TestPreprocessig
+import unittest
 
-    Lietas kas mainas
-    path = "C:/Users/maris/Downloads/IMUData22.csv"
+class CLI(cmd.Cmd):
+    prompt = "->"
 
-    fs = 50 Hz
+    intro = "Squat classification"
+        
+    #Command that will test all of the sets
+    def do_tests(self, line):
+        print("Testing sets")
+        #TestSuite to run tests in isolation
+        suite = unittest.TestSuite()
+        #Create a runner instace
+        runner = unittest.TextTestRunner()
+        #Can add a bunch of tests that we want to check
+        suite.addTest(TestPreprocessig("test_shapeSET"))
+        runner.run(suite)
+        print("Finish testing")
 
-    fourier_cutoff = 20 Hz
+    #Command will combine all the set files inside a single numpy file, also print how many reps are inside
+    #Command that will split the dataset into training and testing
+    #Command that will train and test the module. Return a word file containing all the statistics
+    pass
 
-    segmented_squats = segmented_squats[1:11]
-
-    label_to_number = {
-    "bad-squat": 0,
-    "good-squat": 1,
-    }
-
-    squat_labels = ["bad-squat", "bad-squat", "bad-squat", "bad-squat", "good-squat", "good-squat", "good-squat", "bad-squat", "good-squat", "good-squat"]
-
-"""
+if __name__ == '__main__':
+    CLI().cmdloop()

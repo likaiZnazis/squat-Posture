@@ -56,10 +56,10 @@ def file_exists(fileName):
             return False
 
 # preprocessing.show_graph(os.path.join(path, "1-Set.csv"))
-def main():
-    extracted_segments = combine_sets()
-    dataset = preprocessing.resample_segments(extracted_segments)
-    print(dataset.shape[2])
+# def main():
+#     extracted_segments = combine_sets()
+#     dataset = preprocessing.resample_segments(extracted_segments)
+#     print(dataset.shape[2])
     # np.save(os.path.join(path, "final_dataset"), dataset)
 #working with csv files
 """

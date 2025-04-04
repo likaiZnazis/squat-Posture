@@ -158,17 +158,17 @@ def show_graph(file):
     plt.figure(figsize=(12, 6))  # Izveidojam grafiku ar izmēru 12x6 collas
 
     # Uzzīmējam sākotnējos sensora mērījumus, alpha ir krasas caurspidigums
-    plt.plot(new_timestamps, sensor_values, label='Orģinālie mērījumi', color='red', alpha=0.3)
+    plt.plot(new_timestamps, sensor_values, label='Garneslīpuma mērījumi', color='red', alpha=0.3)
 
     # Marķējam atpazītos segmentus grafikā
     for (start, end) in segments:
-        plt.axvspan(new_timestamps[start], new_timestamps[end], color='yellow', alpha=0.3, 
+        plt.axvspan(new_timestamps[start], new_timestamps[end], color='yellow',  alpha=0.3, 
                     label='Pietupiena segments' if start == segments[0][0] else "")  #Leģendu pievienojam tikai vienu reizi, caur for loop ta ir attiecigas reizes vairak
 
     # Noformējam grafika aprakstus
-    plt.xlabel("Laiks (ms)")  # X ass nosaukums
-    plt.ylabel("Sensora vērtības mērījumi")  # Y ass nosaukums
-    plt.title("Garenslīpuma mērījumi")  # Grafika galvenes nosaukums
+    plt.xlabel("Laiks (ms)" , fontsize=18)  # X ass nosaukums
+    plt.ylabel("Garenslīpuma mērījumi (°)", fontsize=18)  # Y ass nosaukums
+    plt.title("Sensoru mērījumu vizualizācija", fontsize=18)  # Grafika galvenes nosaukums
     plt.legend()  # Pievienojam leģendu
     plt.grid()  # Pievienojam režģi
     plt.show()  # Parādam grafiku'
