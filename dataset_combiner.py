@@ -7,8 +7,6 @@ import preprocessing
 activeDirectoryName = "dataset"
 currentDirectory = os.getcwd()
 path = os.path.join(currentDirectory, activeDirectoryName)
-# fileName = "IMUData22.csv"
-# pathToCSVFie = os.path.join(path, fileName)
 
 def combine_sets():
     try:

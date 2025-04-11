@@ -3,12 +3,28 @@ import cmd
 from test import TestPreprocessig
 import unittest
 import dataset_combiner
+import word_report
 
 class CLI(cmd.Cmd):
     prompt = "->"
-
+    wordReport = {
+        "total_records": 0,
+        "sensor_freq": 0,
+        "segment_length": 0,
+        "form_count": {
+            "forma_1": 0,
+            "forma_2": 0,
+        },
+        "squat_processing":{
+            "IMU-1":
+            {
+                "before": 0,
+                "after": 0
+            }
+        }
+    }
     intro = "Squat classification"
-        
+
     #Command that will test all of the sets
     def do_tests(self, line):
         "Test how many reps are extracted from each squat set"
@@ -38,6 +54,11 @@ class CLI(cmd.Cmd):
     #Command that will train and test the module. Return a word file containing all the statistics
     def do_train(self, line):
         pass
+
+    #Need to check if all the variables are set
+    def do_report(self, line):
+        "Create a word report when the model has been trained"
+        word_report.create_report()
 
 if __name__ == '__main__':
     CLI().cmdloop()
