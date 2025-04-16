@@ -7,6 +7,8 @@ import word_report
 
 class CLI(cmd.Cmd):
     prompt = "->"
+    
+    #This information is for word report
     wordReport = {
         "total_records": 0,
         "sensor_freq": 0,
@@ -42,8 +44,8 @@ class CLI(cmd.Cmd):
     def do_combine(self, line):
         "Combine all the sets together into a single .npy file. Should run command 'tests' before"
         print("Starting to combine sets")
-        dataset_combiner.main()
-
+        datasetInfo = dataset_combiner.main()
+        print(datasetInfo)#(segmenti, iezimes, merijumu paraugi)
         print("Finished combining sets")
         print("New file - final_dataset.npy was created at directory - dataset")
 
@@ -58,7 +60,7 @@ class CLI(cmd.Cmd):
     #Need to check if all the variables are set
     def do_report(self, line):
         "Create a word report when the model has been trained"
-        word_report.create_report()
+        # word_report.create_report()
 
 if __name__ == '__main__':
     CLI().cmdloop()

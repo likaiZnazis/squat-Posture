@@ -51,12 +51,24 @@ def file_exists(fileName):
         else:
             return False
 
+def getFrequency(dataset):
+    #WE load the dataset
+    data = np.loadtxt(dataset,dtype="float", skiprows=1, delimiter=",")
+    #Grab timestamps
+    timestapms = data[0]
+    #Get differences between each point
+    timeStampDifference = np.diff(timestapms)
+    #Print most common value
+    #print() get mode
+
 # preprocessing.show_graph(os.path.join(path, "1-Set.csv"))
 def main():
     extracted_segments = combine_sets()
     dataset = preprocessing.resample_segments(extracted_segments)
+    getFrequency(dataset)
     print("There are {} segments total".format(dataset.shape[0]))
     np.save(os.path.join(path, "final_dataset"), dataset)
+    return dataset.shape
 #working with csv files
 """
 import csv

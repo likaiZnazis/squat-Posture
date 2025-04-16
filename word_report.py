@@ -28,7 +28,7 @@ path = os.path.join(currentDirectory, activeDirectoryName)
 * x|Training time
 """
 
-def create_report(path, total_records, sensor_freq, segment_length, form_counts, file_squat_data):
+def create_report(total_records, sensor_freq, segment_length, form_counts, file_squat_data):
     document = Document()
     
     # Title
@@ -90,4 +90,4 @@ def create_report(path, total_records, sensor_freq, segment_length, form_counts,
     # Save the document
     document.save(os.path.join(path, "report.docx"))
 
-create_report()
+# create_report()
