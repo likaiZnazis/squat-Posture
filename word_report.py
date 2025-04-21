@@ -16,10 +16,10 @@ path = os.path.join(currentDirectory, activeDirectoryName)
 
 # Dataset
 """
-* x|Dataset section should hold inforation about how many repetitions/segments are there. Get from shape
-* x|How many samples per segment are there. get from shape
+* +|Dataset section should hold inforation about how many repetitions/segments are there. Get from shape
+* +|How many samples per segment are there. get from shape
 * x|Also could include information about each of the set file. new function
-* x|What is the sensor freaquency, what does it mean for sensors. new function
+* +|What is the sensor freaquency, what does it mean for sensors. new function
 * x|Infromation about each of the forms and their repetitions. new function
 """
 # Model
