@@ -1,6 +1,7 @@
 import numpy as np
 from dataclasses import dataclass, field
 from scipy import stats
+import uuid
 import os
 import preprocessing
 """
@@ -10,6 +11,8 @@ Klases tiks izveidotas, lai būtu vieglāk aplūkot inormāciju.
 """
 @dataclass
 class SquatSet:
+    #field(default_factory=...). Calls this function every time a new object is created
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
     fileName: str
     formName: str
     segmentArray: list[int] = field(default_factory=list)

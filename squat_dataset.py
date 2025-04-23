@@ -13,6 +13,7 @@ class Dataset:
     #Path to both files
     trainingSetPath: str
     testingSetPath: str
+    path: str = os.path.join(os.getcwd(), "dataset")
 
     def resample_segments(self):
         longest_squat_measured = max(len(segment) for segment in self.segmentArray)
@@ -20,10 +21,10 @@ class Dataset:
         segmented_resampled_squats = np.swapaxes(segmented_resampled_squats, 1, 2)
         return segmented_resampled_squats
 
-    def combine_sets():
+    def combine_sets(self):
         try:
             # Get path to the set files. They will start with a number
-            pathToSetFiles = [ os.path.join(path, file) for file in os.listdir(path) if (file[0].isdigit())]
+            pathToSetFiles = [ os.path.join(self.path, file) for file in os.listdir(self.path) if (file[0].isdigit())]
             # Get segments from each file
             all_signals = []
             for pathSetFile in pathToSetFiles:
@@ -49,5 +50,19 @@ class Dataset:
             print("There was a value error " + str(err))
             print(traceback.format_exc())
 
-    def split_sets():
+    #Splits all the sets into training and testing sets
+    def split_sets(self):
+        seen_forms = set()
+
+        for set in self.allSets:
+            if(set.formName not in seen_forms):
+                #Add the form
+                self.testingSet.append(set)
+                seen_forms.add(set.formName)
+            else:
+                self.trainingSet.append(set)
+    
+    #From both lists create files
+    def train_test_files(self):
+        
         pass

@@ -41,8 +41,6 @@ sensor_measurments = {
     "pitch": 10,
     "roll": 11,
     "yaw": 12,
-    # Altitude bija izmeginājums, domāju iespējams būs labs mērījums priekš segmentācijas
-    # Ļoti jocīgi mēra, krīt palēnām uz leju, diezgan bezjēdzīgs
 }
 
 #Segmenta metodi panemu no cita pētījuma
