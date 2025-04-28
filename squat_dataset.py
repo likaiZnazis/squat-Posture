@@ -15,12 +15,6 @@ class Dataset:
     # testingSetPath: str
     path: str = os.path.join(os.getcwd(), "dataset")
 
-    def resample_segments(self):
-        longest_squat_measured = max(len(segment) for segment in self.segmentArray)
-        segmented_resampled_squats = np.array([np.pad(segment, ((0, longest_squat_measured - len(segment)), (0, 0)), mode='constant') for segment in self.segmentArray])
-        segmented_resampled_squats = np.swapaxes(segmented_resampled_squats, 1, 2)
-        return segmented_resampled_squats
-
     def getFrequency(self) -> int:
         # #WE load the dataset
         # data = np.loadtxt(dataset,dtype="float", skiprows=1, delimiter=",")
@@ -41,6 +35,7 @@ class Dataset:
             for pathSetFile in pathToSetFiles:
                 newSet = SquatSet(fileName=pathSetFile.split("\\")[-1])
                 #load the file
+                # newSet.formName = pathSetFile.split("\\")[-1] Need to change
                 currentFile = np.loadtxt(pathSetFile,dtype="float", skiprows=1, delimiter=",")
                 #Get segment indexes
                 segment_indexes = preprocessing.get_segment_indexes(currentFile)
@@ -68,13 +63,13 @@ class Dataset:
     def split_sets(self) -> None:
         seen_forms = set()
 
-        for set in self.allSets:
-            if(set.formName not in seen_forms):
+        for squatSet in self.allSets:
+            if(squatSet.formName not in seen_forms):
                 #Add the form
-                self.testingSet.append(set)
-                seen_forms.add(set.formName)
+                self.testingSet.append(squatSet)
+                seen_forms.add(squatSet.formName)
             else:
-                self.trainingSet.append(set)
+                self.trainingSet.append(squatSet)
     
     def longest_squatset_segment(self) -> int:
         #this will length the object
@@ -83,13 +78,31 @@ class Dataset:
     #From both lists create files
     def train_file(self):
         #For each training set resample it and add it to a numpy array
-        train_dataset = np.array()
-        for set in self.trainingSet:
-            segmented_resampled_squats = np.array([np.pad(segment, ((0, self.longest_squatset_segment() - len(segment)), (0, 0)), mode='constant') for segment in set])
+        train_dataset = np.ndarray
+        train_dataset_labels = np.array([])
+        for squatSet in self.trainingSet:
+            np.append(train_dataset_labels, squatSet.formName)
+            segmented_resampled_squats = np.array([np.pad(segment, ((0, self.longest_squatset_segment() - len(segment)), (0, 0)), mode='constant') for segment in squatSet.each_sginal_segmented])
             train_dataset = np.swapaxes(segmented_resampled_squats, 1, 2)
-        
-        np.save(os.path.join(self.path, "final_dataset"), train_dataset)
 
-dataset = Dataset()
-dataset.combine_all_sets()
-print(dataset.longest_squatset_segment())
+        np.save(os.path.join(self.path, "train_dataset_labels"), train_dataset_labels)
+        np.save(os.path.join(self.path, "train_dataset"), train_dataset)
+
+
+    def test_file(self):
+        #For each training set resample it and add it to a numpy array
+        test_dataset = np.ndarray
+        test_dataset_labels = np.array([])
+        for squatSet in self.testingSet:
+            np.append(test_dataset_labels, squatSet.formName)
+            segmented_resampled_squats = np.array([np.pad(segment, ((0, self.longest_squatset_segment() - len(segment)), (0, 0)), mode='constant') for segment in squatSet.each_sginal_segmented])
+            test_dataset = np.swapaxes(segmented_resampled_squats, 1, 2)
+        
+        np.save(os.path.join(self.path, "test_dataset_labels"), test_dataset_labels)
+        np.save(os.path.join(self.path, "test_dataset"), test_dataset)
+
+# dataset = Dataset()
+# dataset.combine_all_sets()
+# dataset.split_sets()
+# dataset.test_file()
+# dataset.train_file()

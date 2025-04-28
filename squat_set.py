@@ -13,11 +13,9 @@ Klases tiks izveidotas, lai būtu vieglāk aplūkot inormāciju.
 class SquatSet:
     #field(default_factory=...). Calls this function every time a new object is created
     id: uuid.UUID = field(default_factory=uuid.uuid4)
-    fileName: str
-    formName: str
-    segmentArray: list[int] = field(default_factory=list)
-    finalArray: list[int] = field(default_factory=list)
-    rawData: np.ndarray
+    fileName: str = ""
+    formName: str = ""
+    each_sginal_segmented: list[int] = field(default_factory=list)
     segmentAmountBefore: int = 0
     segmentAmountAfter: int = 0
 
@@ -36,6 +34,9 @@ class SquatSet:
         "roll": 11,
         "yaw": 12,
     }
+
+    def __len__(self):
+        return max(len(segment) for segment in self.each_sginal_segmented)
 
     # Method that will fill out the variables, like segment amount
     def trimSegments(self) -> None:
@@ -73,17 +74,6 @@ class SquatSet:
             segment_data = self.rawData[start:end + 1, [self.SENSOR_MEASURMENTS[sensor_signal] for sensor_signal in self.SENSOR_MEASURMENTS]]
             segmented_squats.append(segment_data)
         return segmented_squats
-    
-    def getFrequency(self,dataset):
-        #WE load the dataset
-        data = np.loadtxt(dataset,dtype="float", skiprows=1, delimiter=",")
-        #Grab timestamps
-        timestamps = data[:,0]
-        #Get differences between each point
-        #For example 1743403873.08 - 1743403873.10 = 
-        timeStampDifference = np.diff(timestamps)
-        #Get common value
-        return stats.mode(timeStampDifference)
 
 # currentFile = np.loadtxt(os.path.join(os.getcwd(),"dataset","1-Set.csv"),dtype="float", skiprows=1, delimiter=",")
 # segmentedFile = preprocessing.get_segment_indexes(currentFile)
