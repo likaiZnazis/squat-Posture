@@ -35,17 +35,14 @@ class Dataset:
             for pathSetFile in pathToSetFiles:
                 newSet = SquatSet(fileName=pathSetFile.split("\\")[-1])
                 #load the file
-                # newSet.formName = pathSetFile.split("\\")[-1] Need to change
+                newSet.formName = pathSetFile.split("\\")[1]
                 currentFile = np.loadtxt(pathSetFile,dtype="float", skiprows=1, delimiter=",")
                 #Get segment indexes
                 segment_indexes = preprocessing.get_segment_indexes(currentFile)
                 newSet.segmentAmountBefore = len(segment_indexes)
-                # print(newSet.segmentAmountBefore)
                 #Extract each sensor signal from the segment indexes
                 newSet.each_sginal_segmented = preprocessing.extract_each_signal(segment_indexes, currentFile)
                 newSet.segmentAmountAfter = len(newSet.each_sginal_segmented)
-                # print(newSet.segmentAmountAfter)
-                # print(len(newSet))
                 self.allSets.append(newSet)
             
         except OSError as err:
