@@ -2,6 +2,7 @@ import numpy as np
 import os
 import time
 from aeon.classification.convolution_based import MultiRocketHydraClassifier
+from sklearn import metrics
 
 class ClassifierModel():
 

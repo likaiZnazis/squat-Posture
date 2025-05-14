@@ -1,6 +1,6 @@
 import numpy as np
 from dataclasses import dataclass, field
-from scipy import stats
+# from scipy import stats
 import uuid
 import os
 import preprocessing

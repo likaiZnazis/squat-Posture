@@ -1,9 +1,9 @@
 import cmd
-# import os
 from test import TestPreprocessig
 import unittest
-import dataset_combiner
-import word_report
+from squat_dataset import Dataset
+
+# import word_report
 
 class CLI(cmd.Cmd):
     prompt = "->"
@@ -26,6 +26,10 @@ class CLI(cmd.Cmd):
         }
     }
     intro = "Squat classification"
+    
+    def __init__(self, completekey = "tab", stdin = None, stdout = None):
+        super().__init__(completekey, stdin, stdout)
+        self.dataset = Dataset()
 
     #Command that will test all of the sets
     def do_tests(self, line):
@@ -44,14 +48,21 @@ class CLI(cmd.Cmd):
     def do_combine(self, line):
         "Combine all the sets together into a single .npy file. Should run command 'tests' before"
         print("Starting to combine sets")
-        datasetInfo = dataset_combiner.main()
+        datasetInfo = self.dataset.combine_all_sets()
         print(datasetInfo)#(segmenti, iezimes, merijumu paraugi)
         print("Finished combining sets")
         print("New file - final_dataset.npy was created at directory - dataset")
 
     #Command that will split the dataset into training and testing
     def do_split(self, line):
-        pass
+        "Splits all sets into training and testing data"
+        print("Combining all the sets")
+        self.dataset.combine_all_sets()
+        print("Spliting sets")
+        self.dataset.split_sets()
+        print("Creating files")
+        self.dataset.train_file()
+        self.dataset.test_file()
 
     #Command that will train and test the module. Return a word file containing all the statistics
     def do_train(self, line):

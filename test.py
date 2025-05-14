@@ -21,7 +21,7 @@ class TestPreprocessig(unittest.TestCase):
             file_dimenstions = segmented_resampled_set.shape
             with self.subTest(line = file_dimenstions):
                 print("{} file contains {} segments".format(setFile.split("\\",-1)[-1], file_dimenstions[0]))
-                self.assertEqual(file_dimenstions, (10, 13, file_dimenstions[2]))
+                self.assertEqual(file_dimenstions, (10, 10, file_dimenstions[2]))
 
     #Testing the final numpy shape
     def test_shapeFINAL(self):

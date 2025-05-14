@@ -1,6 +1,7 @@
 import numpy as np
 #https://numpy.org/doc/2.1/reference/routines.array-creation.html
 import matplotlib.pyplot as plt
+import os
 #https://matplotlib.org/stable/plot_types/index.html
 
 #Signala apstradasana, pievienoja filtru shoutouts AI
@@ -35,12 +36,9 @@ sensor_measurments = {
     "gyroX": 4,
     "gyroY": 5,
     "gyroZ": 6,
-    "magX": 7,
-    "magY": 8,
-    "magZ": 9,
-    "pitch": 10,
-    "roll": 11,
-    "yaw": 12,
+    "pitch": 7,
+    "roll": 8,
+    "yaw": 9,
 }
 
 #Segmenta metodi panemu no cita pētījuma
@@ -50,7 +48,7 @@ sensor_measurments = {
 def get_segment_indexes(file):
     #Creates a array with starting and ending indexes for each segment
     segment_signal = file[:, sensor_measurments["pitch"]]
-    threshold = (np.mean(segment_signal) + np.std(segment_signal)) - 55
+    threshold = (np.mean(segment_signal) + np.std(segment_signal)) - 25
     marker_list = [i >= threshold for i in segment_signal]
     i = 0
     final_pairs = []
@@ -170,3 +168,12 @@ def show_graph(file):
     plt.legend()  # Pievienojam leģendu
     plt.grid()  # Pievienojam režģi
     plt.show()  # Parādam grafiku'
+
+file = os.path.join(os.getcwd(),"dataset","test_dataset.npy")
+
+# print(file)
+# show_graph(file)
+data = np.load(file)
+print(data.shape)
+
+np.save(os.path.join(os.path.join(os.getcwd(),"dataset"), "test"), np.array([1,2,3,4]))

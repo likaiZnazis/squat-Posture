@@ -3,7 +3,7 @@ import os
 import numpy as np
 import traceback
 import preprocessing
-from scipy import stats
+# from scipy import stats
 
 activeDirectoryName = "dataset"
 currentDirectory = os.getcwd()
@@ -52,19 +52,17 @@ def file_exists(fileName):
         else:
             return False
 
-def getFrequency(dataset):
-    #WE load the dataset
-    data = np.loadtxt(dataset,dtype="float", skiprows=1, delimiter=",")
-    #Grab timestamps
-    timestamps = data[:,0]
-    #Get differences between each point
-    #For example 1743403873.08 - 1743403873.10 = 
-    timeStampDifference = np.diff(timestamps)
-    #Get common value
-    return stats.mode(timeStampDifference)
+# def getFrequency(dataset):
+#     #WE load the dataset
+#     data = np.loadtxt(dataset,dtype="float", skiprows=1, delimiter=",")
+#     #Grab timestamps
+#     timestamps = data[:,0]
+#     #Get differences between each point
+#     #For example 1743403873.08 - 1743403873.10 = 
+#     timeStampDifference = np.diff(timestamps)
+#     #Get common value
+#     return stats.mode(timeStampDifference)
 
-common = getFrequency(os.path.join(path,"1-Set.csv"))
-print(common.mode)
 # preprocessing.show_graph(os.path.join(path, "1-Set.csv"))
 def main():
     extracted_segments = combine_sets()
