@@ -169,11 +169,14 @@ def show_graph(file):
     plt.grid()  # Pievienojam režģi
     plt.show()  # Parādam grafiku'
 
-file = os.path.join(os.getcwd(),"dataset","test_dataset.npy")
+data = os.path.join(os.getcwd(),"dataset","test_dataset.npy")
+label = os.path.join(os.getcwd(),"dataset","test_dataset_labels.npy")
 
 # print(file)
 # show_graph(file)
-data = np.load(file)
+dataset_data = np.load(data)
+dataset_labels = np.load(label)
 # print(data.shape)
 print(data)
+print(dataset_labels)
 # np.save(os.path.join(os.path.join(os.getcwd(),"dataset"), "test"), np.array([1,2,3,4]))

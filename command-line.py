@@ -2,6 +2,7 @@ import cmd
 from test import TestPreprocessig
 import unittest
 from squat_dataset import Dataset
+from model import ClassifierModel
 
 # import word_report
 
@@ -30,6 +31,7 @@ class CLI(cmd.Cmd):
     def __init__(self, completekey = "tab", stdin = None, stdout = None):
         super().__init__(completekey, stdin, stdout)
         self.dataset = Dataset()
+        self.model = ClassifierModel()
 
     #Command that will test all of the sets
     def do_tests(self, line):
@@ -44,18 +46,9 @@ class CLI(cmd.Cmd):
         runner.run(suite)
         print("Finish testing")
 
-    #Command will combine all the set files inside a single numpy file, also print how many reps are inside
-    def do_combine(self, line):
-        "Combine all the sets together into a single .npy file. Should run command 'tests' before"
-        print("Starting to combine sets")
-        datasetInfo = self.dataset.combine_all_sets()
-        print(datasetInfo)#(segmenti, iezimes, merijumu paraugi)
-        print("Finished combining sets")
-        print("New file - final_dataset.npy was created at directory - dataset")
-
     #Command that will split the dataset into training and testing
-    def do_split(self, line):
-        "Splits all sets into training and testing data"
+    def do_file(self, line):
+        "Splits all sets into training and testing data and gives files"
         print("Combining all the sets")
         self.dataset.combine_all_sets()
         print("Spliting sets")
@@ -66,7 +59,13 @@ class CLI(cmd.Cmd):
 
     #Command that will train and test the module. Return a word file containing all the statistics
     def do_train(self, line):
-        pass
+        "Train a MultiRocketHydraClassifier based on data provided"
+        self.model.train_model()
+
+    #Command that will test the model labels
+    def do_predit(self, line):
+        "Tests the testing data set part"
+        self.model.evaluate_model()
 
     #Need to check if all the variables are set
     def do_report(self, line):

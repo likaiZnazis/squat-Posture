@@ -85,10 +85,9 @@ class Dataset:
             train_dataset.append(segmented_resampled_squats)
 
         train_dataset = np.concatenate(train_dataset, axis=0)
-        # train_dataset_labels = np.concatenate(labels, axis=0)
-        # print(train_dataset_labels.shape)
-        # np.save(os.path.join(self.path, "train_dataset_labels"), train_dataset_labels)
-        # np.save(os.path.join(self.path, "train_dataset"), train_dataset)
+        train_dataset_labels = np.array([label for label in labels for _ in range(10)])
+        np.save(os.path.join(self.path, "train_dataset_labels"), train_dataset_labels)
+        np.save(os.path.join(self.path, "train_dataset"), train_dataset)
 
 
     def test_file(self):
@@ -103,9 +102,8 @@ class Dataset:
             test_dataset.append(segmented_resampled_squats)
         
         test_dataset = np.concatenate(test_dataset, axis=0)
-        # test_dataset_labels = np.concatenate(labels, axis=0)
-        # print(test_dataset_labels.shape)
-        # np.save(os.path.join(self.path, "test_dataset_labels"), test_dataset_labels)
+        test_dataset_labels = np.array([label for label in labels for _ in range(10)])
+        np.save(os.path.join(self.path, "test_dataset_labels"), test_dataset_labels)
         np.save(os.path.join(self.path, "test_dataset"), test_dataset)
 
 # dataset = Dataset()

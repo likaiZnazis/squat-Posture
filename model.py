@@ -6,8 +6,8 @@ from sklearn import metrics
 
 class ClassifierModel():
 
-    training_set_labels_path = os.path.join(os.getcwd(), "dataset","train_dataset_labels.npy")#need to change
-    testing_set_lables_path = os.path.join(os.getcwd(), "dataset","train_dataset_labels.npy")#need to change
+    training_set_labels_path = os.path.join(os.getcwd(), "dataset","train_dataset_labels.npy")
+    testing_set_lables_path = os.path.join(os.getcwd(), "dataset","test_dataset_labels.npy")
     training_set_path = os.path.join(os.getcwd(), "dataset","train_dataset.npy")
     testing_set_path = os.path.join(os.getcwd(), "dataset","test_dataset.npy")
 
@@ -30,5 +30,8 @@ class ClassifierModel():
 
 #think of ways to evaluate the model
     def evaluate_model(self):
-        self.classifier.fit
-        pass
+        testing_set = np.load(self.testing_set_path)
+        testing_set_labels = np.load(self.testing_set_lables_path)
+        # print(self.classifier.fit_predict(testing_set, testing_set_labels))
+        print(self.classifier.score(testing_set, testing_set_labels))
+        # print(testing_set_labels)

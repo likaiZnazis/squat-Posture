@@ -50,7 +50,7 @@ class SquatSet:
     def get_segment_indexes(self):
         #Creates a array with starting and ending indexes for each segment
         segment_signal = self.rawData[:, self.SENSOR_MEASURMENTS["pitch"]]
-        threshold = (np.mean(segment_signal) + np.std(segment_signal)) - 55
+        threshold = (np.mean(segment_signal) + np.std(segment_signal)) - 25
         marker_list = [i >= threshold for i in segment_signal]
         i = 0
         final_pairs = []
