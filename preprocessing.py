@@ -2,6 +2,9 @@ import numpy as np
 #https://numpy.org/doc/2.1/reference/routines.array-creation.html
 import matplotlib.pyplot as plt
 import os
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import math
 #https://matplotlib.org/stable/plot_types/index.html
 
 #Signala apstradasana, pievienoja filtru shoutouts AI
@@ -83,10 +86,13 @@ def extract_each_signal(segment_index_array, data):
     #Using starting and edning indexes extracts each sensor signal from the original dataset. Resulting in individual segments
     segmented_squats = []
     for start,end in segment_index_array:
-        # Iznemam visas vajadzīgās vērtības
         segment_data = data[start:end + 1, [sensor_measurments[sensor_signal] for sensor_signal in sensor_measurments]]
         segmented_squats.append(segment_data)
-    return segmented_squats[1:11]#2D array
+    if (len(segmented_squats) == 12):
+        return segmented_squats[1:11]
+    else:
+        return segmented_squats
+    #2D array
 
 def resample_segments(segmented_squats):
     longest_squat_measured = max(len(segment) for segment in segmented_squats)
@@ -145,6 +151,63 @@ def resample_segments(segmented_squats):
 # print(clf.predict(segmented_resampled_squats))
 """
 
+#Make that this function takes in a single squat
+def make_graph(file):
+    data = np.loadtxt(file, delimiter=",", dtype="float", skiprows=1)
+
+    plt.figure(figsize=(12, 8))
+
+    # 1. AccX over Time
+    plt.subplot(2, 3, 1)
+    plt.scatter(data[:, sensor_measurments["time"]],
+                data[:, sensor_measurments["accX"]],
+                color='red', s=5)
+    plt.title("AccX over Time")
+    plt.xlabel("Time")
+    plt.ylabel("AccX")
+
+    # 2. Pitch over Time
+    plt.subplot(2, 3, 2)
+    plt.scatter(data[:, sensor_measurments["time"]],
+                data[:, sensor_measurments["pitch"]],
+                color='blue', s=5)
+    plt.title("Pitch over Time")
+    plt.xlabel("Time")
+    plt.ylabel("Pitch")
+
+    # 3. AccX vs GyroX
+    plt.subplot(2, 3, 3)
+    plt.scatter(data[:, sensor_measurments["accX"]],
+                data[:, sensor_measurments["gyroX"]],
+                color='green', s=5)
+    plt.title("AccX vs GyroX")
+    plt.xlabel("AccX")
+    plt.ylabel("GyroX")
+
+    # 4. Pitch vs Roll
+    plt.subplot(2, 3, 4)
+    plt.scatter(data[:, sensor_measurments["pitch"]],
+                data[:, sensor_measurments["roll"]],
+                color='orange', s=5)
+    plt.title("Pitch vs Roll")
+    plt.xlabel("Pitch")
+    plt.ylabel("Roll")
+
+    # 5. AccZ vs GyroZ
+    plt.subplot(2, 3, 5)
+    plt.scatter(data[:, sensor_measurments["accZ"]],
+                data[:, sensor_measurments["gyroZ"]],
+                color='purple', s=5)
+    plt.title("AccZ vs GyroZ")
+    plt.xlabel("AccZ")
+    plt.ylabel("GyroZ")
+
+    plt.tight_layout()
+    plt.show()
+
+# file = os.path.join(os.getcwd(),"dataset","7-Half-Set.csv")
+# make_graph(file)
+
 # ---- 4. Attēlot datus ar atpazītajiem segmentiem ----
 def show_graph(file):
     data = np.loadtxt(file, delimiter=",",dtype="float",skiprows=1)
@@ -169,14 +232,87 @@ def show_graph(file):
     plt.grid()  # Pievienojam režģi
     plt.show()  # Parādam grafiku'
 
-data = os.path.join(os.getcwd(),"dataset","test_dataset.npy")
-label = os.path.join(os.getcwd(),"dataset","test_dataset_labels.npy")
+import numpy as np
+import matplotlib.pyplot as plt
 
-# print(file)
-# show_graph(file)
-dataset_data = np.load(data)
-dataset_labels = np.load(label)
-# print(data.shape)
-print(data)
-print(dataset_labels)
-# np.save(os.path.join(os.path.join(os.getcwd(),"dataset"), "test"), np.array([1,2,3,4]))
+import numpy as np
+import matplotlib.pyplot as plt
+
+def compare_acc_xyz_two_experiments(file1, file2, sensor):
+    if sensor not in ["acc", "gyro", "other"]:
+        print("Invalid sensor type. Use 'acc', 'gyro', or 'other'.")
+        return
+
+    sensor_measurments = {
+        "accX": 1, "accY": 2, "accZ": 3,
+        "gyroX": 4, "gyroY": 5, "gyroZ": 6,
+        "pitch": 7, "roll": 8, "yaw": 9
+    }
+
+    # Load data
+    data1 = np.loadtxt(file1, delimiter=",", dtype="float", skiprows=1)
+    data2 = np.loadtxt(file2, delimiter=",", dtype="float", skiprows=1)
+
+    # Get sensor values
+    if sensor in ["acc", "gyro"]:
+        s1 = [data1[:, sensor_measurments[sensor + axis]] for axis in ["X", "Y", "Z"]]
+        s2 = [data2[:, sensor_measurments[sensor + axis]] for axis in ["X", "Y", "Z"]]
+    else:
+        s1 = [data1[:, sensor_measurments[axis]] for axis in ["pitch", "roll", "yaw"]]
+        s2 = [data2[:, sensor_measurments[axis]] for axis in ["pitch", "roll", "yaw"]]
+
+    # Timestamps
+    time1 = np.arange(0, len(s1[0]) * 20, 20)
+    time2 = np.arange(0, len(s2[0]) * 20, 20)
+
+    # Setup plot
+    fig, axs = plt.subplots(3, 1, figsize=(14, 10), sharex=True)
+
+    # Style settings
+    axis_labels = ["X", "Y", "Z"]
+    line_style = "-"
+    colors = ["blue", "orange"]  # Exp 1 = blue, Exp 2 = orange
+    sensors = ["garenslīpums", "sānsverpe", "virsgrieze"]
+
+    for i in range(3):
+        axs[i].plot(time1, s1[i], color=colors[0], linestyle=line_style, label=f"Exp 1 - {axis_labels[i]}")
+        axs[i].plot(time2, s2[i], color=colors[1], linestyle=line_style, label=f"Exp 2 - {axis_labels[i]}")
+        axs[i].set_ylabel(f"{sensors[i].upper()} °")
+        axs[i].legend()
+        axs[i].grid(True)
+
+    axs[2].set_xlabel("Laiks (ms)")
+    plt.suptitle("Rotāciju leņķu salīdzināšana", fontsize=16)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.show()
+
+
+def getFrequency():
+    #WE load the dataset
+    data = np.loadtxt(os.path.join(os.getcwd(),"dataset","1-Full-Set.csv"),dtype="float",delimiter=",",skiprows=1)
+    #Grab timestamps
+    timestamps = data[:,0]
+    #Get differences between each point
+    
+    #Calculate difference between 2 timepoints
+    timeStampDifference = np.diff(timestamps)
+    #Count how many times a
+    values, counts = np.unique(timeStampDifference, return_counts=True)
+    frequency = 1 / values[np.argmax(counts)]
+    frequency = (math.ceil(frequency))
+    print(frequency)
+# getFrequency()
+# file1 = os.path.join(os.getcwd(),"1expe.csv")
+# file2 = os.path.join(os.getcwd(),"2expe.csv")
+
+# compare_acc_xyz_two_experiments(file1=file1, file2=file2, sensor="other")
+
+data1 = os.path.join(os.getcwd(),"dataset","test_dataset_labels.npy")
+# label = os.path.join(os.getcwd(),"dataset","test_dataset_labels.npy")
+# file = os.path.join(os.getcwd(),"dataset","2-Full-Set.csv")
+# data = np.load(data1)
+# print(data)
+# show_graph(file1)
+# dataset_data = np.load(data)
+
+# plot_squat_class_distribution(dataset_data,dataset_labels)

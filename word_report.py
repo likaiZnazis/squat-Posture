@@ -1,64 +1,38 @@
-
 from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 import os
 from datetime import date
 
-activeDirectoryName = "dataset"
-currentDirectory = os.getcwd()
-path = os.path.join(currentDirectory, activeDirectoryName)
+def create_report(total_records, sensor_freq, segment_length, form_counts,
+                  accuracy, specificity, sensitivity, confusion_matrixPath):
 
-# What things should be inside the report?
-# There should be two sections: Dataset and model
+    activeDirectoryName = "dataset"
+    currentDirectory = os.getcwd()
+    path = os.path.join(currentDirectory, activeDirectoryName)
 
-#Create a word prototype
-
-# Dataset
-"""
-* +|Dataset section should hold inforation about how many repetitions/segments are there. Get from shape
-* +|How many samples per segment are there. get from shape
-* x|Also could include information about each of the set file. new function
-* +|What is the sensor freaquency, what does it mean for sensors. new function
-* x|Infromation about each of the forms and their repetitions. new function
-"""
-# Model
-"""
-* x|Mentioned metrics and explanation
-* x|Training time
-"""
-
-def create_report(total_records, sensor_freq, segment_length, form_counts, file_squat_data):
     document = Document()
-    
-    # Title
+
+    # Title and intro
     title = document.add_heading('ATSKAITE', 0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    # Subtitle
     subtitle = document.add_paragraph('PIETUPIENA DATUKOPAI UN KLASIFIKĀCIJAI')
     subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    # Date
     document.add_paragraph(str(date.today()), style='Normal')
 
-    # Description
     document.add_paragraph(
-        'Dokumenta apraksts\n'
         '\tDokuments sastāv no divām daļām: datu kopa un modelis. Datu kopas daļā tiek aprakstītas dažādas specifikas par izveidoto datu kopu. '
         'Pretēji tas pats arī ir darīts modeļa nodaļā.\n'
     )
 
-    # Section: DATU KOPA
+    # --- Section: Dataset ---
     document.add_heading('DATU KOPA', level=1)
-
-    # Dataset Overview
     document.add_paragraph('Datu kopas, kopējās iezīmes')
-    document.add_paragraph(f'Kopējais segmentu/pietupienu/ierakstu skaits – {total_records}')
+    document.add_paragraph(f'Kopējais pietupienu skaits – {total_records}')
     document.add_paragraph(f'Sensora frekvence - {sensor_freq}')
     document.add_paragraph(f'Segmentu garums – {segment_length}')
 
-    # Table: Form counts. Key value pairs
+    # Form counts table
     document.add_paragraph('Formu iedalījums ierakstu daudzumos:')
     table1 = document.add_table(rows=1, cols=2)
     table1.style = 'Table Grid'
@@ -70,24 +44,27 @@ def create_report(total_records, sensor_freq, segment_length, form_counts, file_
         row_cells[0].text = str(form)
         row_cells[1].text = str(count)
 
-    # Dataset specifics
-    document.add_paragraph('\nDatu kopas, piegājienu iezīmes')
-    document.add_paragraph('Katra faila pietupienu daudzums')
+    document.add_page_break()
+    # --- Section: Model Evaluation ---
+    document.add_heading('MODELIS', level=1)
+    document.add_paragraph(f'Precizitāte - {accuracy:.4f}')
+    document.add_paragraph(f'Jutība - {sensitivity:.4f}')
+    document.add_paragraph(f'Specifiskums - {specificity:.4f}')
 
-    # Table: File squat data. Key value pairs
-    table2 = document.add_table(rows=1, cols=3)
-    table2.style = 'Table Grid'
-    hdr_cells = table2.rows[0].cells
-    hdr_cells[0].text = 'Faila nosaukums'
-    hdr_cells[1].text = 'Pietupieni pirms pirmsprocesēšanas'
-    hdr_cells[2].text = 'Pietupieni pēc pirmsprocesēšanas'
-    for file_data in file_squat_data:
-        row_cells = table2.add_row().cells
-        row_cells[0].text = file_data['filename']
-        row_cells[1].text = str(file_data['before'])
-        row_cells[2].text = str(file_data['after'])
+    # Confusion Matrix Table
+    # cm_table = document.add_table(rows=len(class_names)+1, cols=len(class_names)+1)
+    # cm_table.style = 'Table Grid'
 
-    # Save the document
+    # Header row
+    # cm_table.cell(0, 0).text = " "
+    # for j, name in enumerate(class_names):
+    #     cm_table.cell(0, j+1).text = name
+    #     cm_table.cell(j+1, 0).text = name
+
+    # # Fill matrix
+    # for i in range(len(confusion_matrix)):
+    #     for j in range(len(confusion_matrix[i])):
+    #         cm_table.cell(i+1, j+1).text = str(confusion_matrix[i][j])
+    document.add_picture(confusion_matrixPath, width=Inches(5.5))
+    # Save document
     document.save(os.path.join(path, "report.docx"))
-
-# create_report()

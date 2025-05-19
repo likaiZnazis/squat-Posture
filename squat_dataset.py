@@ -4,6 +4,8 @@ import numpy as np
 import traceback
 import preprocessing
 import os
+import math
+from scipy import stats
 
 @dataclass
 class Dataset:
@@ -11,40 +13,53 @@ class Dataset:
     trainingSet: list[SquatSet] = field(default_factory=list)
     testingSet: list[SquatSet] = field(default_factory=list)
     #Path to both files
-    # trainingSetPath: str
-    # testingSetPath: str
+    trainingSetPath: str = field(default_factory=str)
+    testingSetPath: str= ""
     path: str = os.path.join(os.getcwd(), "dataset")
+    frequency: int = field(default_factory=int)
 
     def getFrequency(self) -> int:
-        # #WE load the dataset
-        # data = np.loadtxt(dataset,dtype="float", skiprows=1, delimiter=",")
-        # #Grab timestamps
-        # timestamps = data[:,0]
-        # #Get differences between each point
-        # #For example 1743403873.08 - 1743403873.10 = 
-        # timeStampDifference = np.diff(timestamps)
-        # #Get common value
-        # return stats.mode(timeStampDifference)
-        pass
+        #WE load the dataset
+        print("path "+ self.trainingSetPath)
+        data = np.load(self.trainingSetPath)
+        #Grab timestamps
+        timestamps = data[:,0]
+        #Get differences between each point
+        
+        #Calculate difference between 2 timepoints
+        timeStampDifference = np.diff(timestamps)
+
+        #Count how many times a
+        values, counts = np.unique(timeStampDifference, return_counts=True)
+        self.frequency = 1 / values[np.argmax(counts)]
+        self.frequency = (math.ceil(self.frequency))
+        return self.frequency
     
-    def combine_all_sets(self) -> None:
+    def combine_all_sets(self) -> int:
         try:
             # Get path to the set files. They will start with a number
-            pathToSetFiles = [ os.path.join(self.path, file) for file in os.listdir(self.path) if (file[0].isdigit())]
+            # print(os.listdir(self.path))
+            files = [f for f in os.listdir(self.path) if f[0].isdigit()]
+            files = sorted(files, key=lambda f: int(f.split('-')[0]))
+            total_reps = 0
             # Get segments from each file
-            for pathSetFile in pathToSetFiles:
-                newSet = SquatSet(fileName=pathSetFile.split("\\")[-1])
+            for setFileName in files:
+                # print(setFileName.split("\\")[-1])
+                newSet = SquatSet(fileName=setFileName.split("\\")[-1])
                 #load the file
-                newSet.formName = pathSetFile.split("\\")[-1].split("-")[1]
-                currentFile = np.loadtxt(pathSetFile,dtype="float", skiprows=1, delimiter=",")
+                newSet.formName = setFileName.split("\\")[-1].split("-")[1]
+                print(setFileName)
+                currentFile = np.loadtxt(os.path.join(self.path,setFileName),dtype="float", skiprows=1, delimiter=",")
                 #Get segment indexes
                 segment_indexes = preprocessing.get_segment_indexes(currentFile)
                 newSet.segmentAmountBefore = len(segment_indexes)
                 #Extract each sensor signal from the segment indexes
                 newSet.each_sginal_segmented = preprocessing.extract_each_signal(segment_indexes, currentFile)
                 newSet.segmentAmountAfter = len(newSet.each_sginal_segmented)
+                total_reps+=newSet.segmentAmountAfter
                 self.allSets.append(newSet)
-            
+                
+            return total_reps
         except OSError as err:
             print("OS error occured " + "probably the path is not correct" + " " + str(err))
             print(traceback.format_exc())
@@ -66,6 +81,15 @@ class Dataset:
                 seen_forms.add(squatSet.formName)
             else:
                 self.trainingSet.append(squatSet)
+
+        form_count = {}
+        for squatSet in self.allSets:
+            print(squatSet.formName)
+            if squatSet.formName in form_count:
+                form_count[squatSet.formName] += 10
+            else:
+                form_count[squatSet.formName] = 10
+        return form_count
     
     def longest_squatset_segment(self) -> int:
         #this will length the object
@@ -86,8 +110,10 @@ class Dataset:
 
         train_dataset = np.concatenate(train_dataset, axis=0)
         train_dataset_labels = np.array([label for label in labels for _ in range(10)])
+        #Check if the path exists
         np.save(os.path.join(self.path, "train_dataset_labels"), train_dataset_labels)
         np.save(os.path.join(self.path, "train_dataset"), train_dataset)
+        self.trainingSetPath = os.path.join(self.path, "train_dataset.npy")
 
 
     def test_file(self):
@@ -103,11 +129,7 @@ class Dataset:
         
         test_dataset = np.concatenate(test_dataset, axis=0)
         test_dataset_labels = np.array([label for label in labels for _ in range(10)])
+        #Check if the path exists
         np.save(os.path.join(self.path, "test_dataset_labels"), test_dataset_labels)
         np.save(os.path.join(self.path, "test_dataset"), test_dataset)
-
-# dataset = Dataset()
-# dataset.combine_all_sets()
-# dataset.split_sets()
-# dataset.test_file()
-# dataset.train_file()
+        self.testingSetPath = os.path.join(self.path, "test_dataset.npy")
