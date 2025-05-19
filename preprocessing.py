@@ -307,11 +307,12 @@ def getFrequency():
 
 # compare_acc_xyz_two_experiments(file1=file1, file2=file2, sensor="other")
 
-data1 = os.path.join(os.getcwd(),"dataset","test_dataset_labels.npy")
+data1 = os.path.join(os.getcwd(),"dataset","hz100","train_dataset.npy")
+data = np.load(data1)
+print(data.shape)
+
 # label = os.path.join(os.getcwd(),"dataset","test_dataset_labels.npy")
 # file = os.path.join(os.getcwd(),"dataset","2-Full-Set.csv")
-# data = np.load(data1)
-# print(data)
 # show_graph(file1)
 # dataset_data = np.load(data)
 
